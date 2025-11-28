@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { PlanType, ServicePlan, FormData } from '../types';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label, Badge } from './ui/DesignSystem';
-import { Check, Send, ChevronLeft, Upload, Info } from 'lucide-react';
+import { Check, Send, ChevronLeft, Upload, Info, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabaseClient';
 
 const plans: ServicePlan[] = [
   {
@@ -69,11 +71,17 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
     businessName: '',
     businessDescription: '',
     email: '',
-    industry: ''
+    phone: '',
+    industry: '',
+    logoFile: null,
+    contentFile: null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [customIndustry, setCustomIndustry] = useState('');
   const [selectedIndustrySelect, setSelectedIndustrySelect] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [contentFileName, setContentFileName] = useState('');
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -99,12 +107,126 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
     updateForm('industry', val);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      setFileName(`${files.length} arquivo(s) selecionado(s)`);
+      updateForm('logoFile', files);
+    }
+  };
+
+  const handleContentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setContentFileName(file.name);
+      updateForm('contentFile', file);
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length > 11) value = value.slice(0, 11); // Limit to 11 digits
+
+    // Apply mask (XX) XXXXX-XXXX
+    let formatted = value;
+    if (value.length > 2) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    }
+    if (value.length > 7) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+    }
+
+    updateForm('phone', formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    setStep(5);
-    setIsSubmitting(false);
+    setSubmitError(null);
+
+    try {
+      let logoUrlsString = null;
+      let contentUrl = null;
+
+      // 1. Upload Logo Files if exist
+      if (formData.logoFile && formData.logoFile.length > 0) {
+        const uploadPromises = formData.logoFile.map(async (file) => {
+           const fileExt = file.name.split('.').pop();
+           const fileName = `logo-${Date.now()}-${Math.random()}.${fileExt}`;
+           const filePath = `${fileName}`;
+
+           const { error: uploadError } = await supabase.storage
+             .from('logos')
+             .upload(filePath, file);
+
+           if (uploadError) {
+             console.error('Logo upload error:', uploadError);
+             // Continue even if one fails, or throw? Let's throw for now
+             throw new Error(`Falha no upload de imagem: ${uploadError.message}`);
+           }
+
+           const { data: { publicUrl } } = supabase.storage
+             .from('logos')
+             .getPublicUrl(filePath);
+           
+           return publicUrl;
+        });
+
+        const urls = await Promise.all(uploadPromises);
+        logoUrlsString = urls.join(',');
+      }
+
+      // 2. Upload Content File if exists
+      if (formData.contentFile) {
+        const file = formData.contentFile;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `doc-${Date.now()}-${Math.random()}.${fileExt}`;
+        
+        const { error: docError } = await supabase.storage
+          .from('documents')
+          .upload(fileName, file);
+
+        if (docError) {
+           console.error('Doc upload error:', docError);
+           // Warning but maybe not block? Let's block to be safe.
+           throw new Error(`Falha no upload do documento: ${docError.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('documents')
+            .getPublicUrl(fileName);
+        
+        contentUrl = publicUrl;
+      }
+
+      // 3. Insert Lead Data
+      const { error: insertError } = await supabase
+        .from('leads')
+        .insert({
+          business_name: formData.businessName,
+          business_description: formData.businessDescription,
+          industry: formData.industry,
+          email: formData.email,
+          phone: formData.phone,
+          selected_plan: formData.selectedPlan,
+          brand_primary_color: formData.brandColors.primary,
+          brand_secondary_color: formData.brandColors.secondary,
+          typography: formData.typography,
+          logo_url: logoUrlsString,
+          content_url: contentUrl
+        });
+
+      if (insertError) {
+        throw new Error('Erro ao salvar dados: ' + insertError.message);
+      }
+
+      setStep(5);
+    } catch (err: any) {
+      console.error(err);
+      setSubmitError(err.message || "Ocorreu um erro ao enviar. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const selectedFontData = fontOptions.find(f => f.id === formData.typography) || fontOptions[0];
@@ -251,7 +373,6 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                           fontFamily: selectedFontData.name === 'Space Grotesk' ? '"Space Grotesk", monospace' : selectedFontData.name 
                         }}
                       >
-                         {/* Description Overlay - Light text on white background needs to be dark */}
                          <div className="absolute top-0 right-0 p-4 w-full md:w-1/2 text-right pointer-events-none opacity-20 md:opacity-100">
                              <p className="text-xs font-bold uppercase tracking-wider mb-1 text-slate-800">Sobre esta fonte</p>
                              <p className="text-xs text-slate-500 mb-2">{selectedFontData.desc}</p>
@@ -342,15 +463,59 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                       onChange={(e) => updateForm('businessDescription', e.target.value)}
                     />
                   </div>
-                  <div className="pt-4 border-t">
-                      <div className="flex items-center gap-4 p-4 bg-secondary/50 rounded-lg border-dashed border-2">
-                        <Upload className="w-8 h-8 text-muted-foreground" />
-                        <div>
-                            <p className="text-sm font-medium">Logo e Imagens</p>
-                            <p className="text-xs text-muted-foreground">Você receberá um link seguro para upload após o cadastro.</p>
+                  
+                  {/* Image Upload Section */}
+                  <div className="space-y-2 pt-2 border-t mt-4">
+                     <Label className="flex items-center gap-2">
+                       Logotipo e Imagens do Site <Badge variant="outline" className="text-xs font-normal text-muted-foreground">Opcional</Badge>
+                     </Label>
+                     
+                     <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-md text-xs text-blue-700 dark:text-blue-300 flex gap-2 items-start border border-blue-100 dark:border-blue-800 mb-2">
+                        <Sparkles className="w-4 h-4 mt-0.5 shrink-0" />
+                        <p>Caso não tenha imagens, não se preocupe! <strong>Vamos criar todos os criativos e banners usando Inteligência Artificial</strong> para sua aprovação.</p>
+                     </div>
+
+                     <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg border-dashed border-2 border-muted hover:border-primary/50 transition-colors cursor-pointer relative">
+                        <input 
+                           type="file" 
+                           accept="image/*" 
+                           multiple
+                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           onChange={handleFileChange}
+                        />
+                        <div className="bg-background p-2 rounded-full shadow-sm">
+                           <Upload className="w-6 h-6 text-primary" />
                         </div>
-                      </div>
+                        <div>
+                            <p className="text-sm font-medium">{fileName || 'Clique para selecionar imagens'}</p>
+                            <p className="text-xs text-muted-foreground">Logotipo, fotos de produtos ou referências (JPG, PNG)</p>
+                        </div>
+                     </div>
                   </div>
+
+                   {/* Content Upload Section */}
+                  <div className="space-y-2 pt-2 mt-4">
+                     <Label className="flex items-center gap-2">
+                       Conteúdo do Site (Word/PDF) <Badge variant="outline" className="text-xs font-normal text-muted-foreground">Opcional</Badge>
+                     </Label>
+                     
+                     <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg border-dashed border-2 border-muted hover:border-primary/50 transition-colors cursor-pointer relative">
+                        <input 
+                           type="file" 
+                           accept=".doc,.docx,.pdf,.txt" 
+                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           onChange={handleContentFileChange}
+                        />
+                        <div className="bg-background p-2 rounded-full shadow-sm">
+                           <FileText className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium">{contentFileName || 'Clique para anexar arquivo de texto'}</p>
+                            <p className="text-xs text-muted-foreground">Caso não tenha, criaremos o conteúdo via IA.</p>
+                        </div>
+                     </div>
+                  </div>
+
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button variant="outline" onClick={handleBack}>Voltar</Button>
@@ -394,22 +559,42 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                         <p><strong>Fique tranquilo:</strong> A cobrança da assinatura mensal inicia somente <strong>após</strong> a aprovação da prévia do site e configuração final do domínio.</p>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Seu E-mail Profissional</Label>
-                        <Input 
-                          type="email" 
-                          placeholder="voce@empresa.com" 
-                          value={formData.email}
-                          onChange={(e) => updateForm('email', e.target.value)}
-                          required
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>E-mail Profissional</Label>
+                            <Input 
+                            type="email" 
+                            placeholder="voce@empresa.com" 
+                            value={formData.email}
+                            onChange={(e) => updateForm('email', e.target.value)}
+                            required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Celular / WhatsApp</Label>
+                            <Input 
+                            type="tel" 
+                            placeholder="(11) 99999-9999" 
+                            value={formData.phone}
+                            onChange={handlePhoneChange}
+                            maxLength={15}
+                            required
+                            />
+                        </div>
                     </div>
+
+                    {submitError && (
+                      <div className="flex gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded mt-2">
+                        <AlertCircle className="w-4 h-4 mt-0.5" />
+                        <p>{submitError}</p>
+                      </div>
+                    )}
                     
-                    <Button className="w-full mt-4" size="lg" onClick={handleSubmit} disabled={isSubmitting || !formData.email}>
+                    <Button className="w-full mt-4" size="lg" onClick={handleSubmit} disabled={isSubmitting || !formData.email || !formData.phone}>
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
                                 <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                                Processando...
+                                Salvando e Enviando...
                             </span>
                         ) : (
                             <span className="flex items-center gap-2">
@@ -442,7 +627,7 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                 <p className="text-muted-foreground text-lg mb-8">
                     Nossa equipe já está analisando o projeto da <strong>{formData.businessName}</strong>. 
                     <br/><br/>
-                    Em breve você receberá uma mensagem no WhatsApp para confirmar os detalhes e colocar seu site no ar.
+                    Em breve você receberá uma mensagem no WhatsApp <strong>{formData.phone}</strong> para confirmar os detalhes e colocar seu site no ar.
                 </p>
                 <Button onClick={onCancel} variant="outline">Voltar para Home</Button>
              </motion.div>

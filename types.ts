@@ -1,3 +1,4 @@
+
 export enum PlanType {
   LANDING = 'LANDING',
   CMS = 'CMS',
@@ -23,7 +24,10 @@ export interface FormData {
   businessName: string;
   businessDescription: string;
   email: string;
+  phone: string;
   industry: string;
+  logoFile?: File[] | null;
+  contentFile?: File | null;
 }
 
 export interface Template {

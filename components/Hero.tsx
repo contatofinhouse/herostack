@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from './ui/DesignSystem';
 import { ChevronRight, Code2, LayoutTemplate, Zap } from 'lucide-react';
@@ -58,7 +59,7 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             className="mb-8 flex justify-center"
           >
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-muted-foreground ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:ring-white/10 dark:hover:ring-white/20 bg-background/50 backdrop-blur-sm">
-              Modelo de assinatura inteligente. <a href="#precos" className="font-semibold text-primary"><span className="absolute inset-0" aria-hidden="true" />Ver planos mensais <span aria-hidden="true">&rarr;</span></a>
+              Modelo de assinatura inteligente. <a href="#precos" className="font-semibold text-blue-600"><span className="absolute inset-0" aria-hidden="true" />Ver planos mensais <span aria-hidden="true">&rarr;</span></a>
             </div>
           </motion.div>
           
@@ -80,7 +81,7 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-lg leading-8 text-muted-foreground"
           >
-            Tenha sua Landing Page ou Site Institucional com tecnologia de ponta (Next.js). Nós criamos, hospedamos e mantemos. Você só paga a assinatura.
+            Tenha sua Landing Page ou Site Institucional com tecnologia de ponta. Criamos, hospedamos e mantemos. Assinatura única com tudo incluso.
           </motion.p>
           
           <motion.div 
@@ -89,7 +90,7 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-10 flex items-center justify-center gap-x-6"
           >
-            <Button size="lg" onClick={onStart} className="gap-2 text-base font-bold shadow-lg shadow-primary/25">
+            <Button size="lg" onClick={onStart} className="gap-2 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 border-0">
               Criar Site <ChevronRight className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="lg" onClick={onShowcase}>
@@ -114,14 +115,14 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
                 <p className="mt-2 text-muted-foreground">Layouts modernos e responsivos, criados para transmitir autoridade e converter visitantes em clientes.</p>
              </div>
              <div className="flex flex-col items-center text-center p-6 rounded-2xl hover:bg-white/5 transition-colors">
-                <div className="mb-4 p-3 rounded-full bg-indigo-500/10 text-indigo-500">
+                <div className="mb-4 p-3 rounded-full bg-blue-500/10 text-blue-500">
                   <Zap className="w-8 h-8" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Tecnologia Moderna</h3>
-                <p className="mt-2 text-muted-foreground">Utilizamos React e Next.js, as mesmas tecnologias usadas pelas maiores startups do Vale do Silício.</p>
+                <p className="mt-2 text-muted-foreground">Utilizamos React, as mesmas tecnologias usadas pelas maiores startups do Vale do Silício.</p>
              </div>
              <div className="flex flex-col items-center text-center p-6 rounded-2xl hover:bg-white/5 transition-colors">
-                <div className="mb-4 p-3 rounded-full bg-slate-500/10 text-slate-500">
+                <div className="mb-4 p-3 rounded-full bg-blue-500/10 text-blue-500">
                   <Code2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Sem Dor de Cabeça</h3>

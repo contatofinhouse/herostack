@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from './ui/DesignSystem';
 import { ChevronRight, Code2, LayoutTemplate, Zap } from 'lucide-react';
@@ -97,7 +98,11 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase, onPricing }) => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-10 flex items-center justify-center gap-x-6"
           >
-            <Button size="lg" onClick={onStart} className="gap-2 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 border-0">
+            <Button 
+              size="lg" 
+              onClick={onStart} 
+              className="gap-2 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 border-0 hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.6)] hover:scale-105 transition-all duration-300"
+            >
               Criar Site <ChevronRight className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="lg" onClick={onShowcase}>

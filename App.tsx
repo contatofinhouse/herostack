@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Comparison from './components/Comparison';
@@ -8,21 +9,23 @@ import Pricing from './components/Pricing';
 import Benefits from './components/Benefits';
 import LegalDocs from './components/LegalDocs';
 import FAQ from './components/FAQ';
+import DraftEditor from './components/DraftEditor';
 import { Button } from './components/ui/DesignSystem';
 import MouseParticles from './components/ui/MouseParticles';
 import { Moon, Sun, Linkedin, MessageCircle, Send, Menu, X } from 'lucide-react';
-import { Template, PlanType } from './types';
+import { Template, PlanType, Lead } from './types';
 import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
 
 const motion = motionOriginal as any;
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'home' | 'wizard' | 'showcase' | 'demo' | 'terms' | 'privacy' | 'guide'>('home');
+  const [view, setView] = useState<'home' | 'wizard' | 'showcase' | 'demo' | 'terms' | 'privacy' | 'guide' | 'draft-editor'>('home');
   const [isDark, setIsDark] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<PlanType | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingScrollToPricing, setPendingScrollToPricing] = useState(false);
+  const [currentLead, setCurrentLead] = useState<Lead | null>(null);
 
   // Initialize theme
   useEffect(() => {
@@ -86,6 +89,11 @@ const App: React.FC = () => {
     setView('wizard');
   };
 
+  const handleWizardComplete = (lead: Lead) => {
+    setCurrentLead(lead);
+    setView('draft-editor');
+  };
+
   const handlePricingClick = () => {
     setMobileMenuOpen(false);
     
@@ -115,6 +123,16 @@ const App: React.FC = () => {
         template={selectedTemplate} 
         onBack={() => setView('showcase')} 
         onSelect={handleStartProject}
+      />
+    );
+  }
+
+  // If in Draft Editor View
+  if (view === 'draft-editor' && currentLead) {
+    return (
+      <DraftEditor 
+        lead={currentLead}
+        onExit={() => setView('home')}
       />
     );
   }
@@ -244,6 +262,7 @@ const App: React.FC = () => {
         {view === 'wizard' && (
           <Wizard 
             onCancel={() => setView('home')} 
+            onComplete={handleWizardComplete}
             initialPlan={selectedPlanId}
           />
         )}

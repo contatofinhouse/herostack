@@ -1,15 +1,17 @@
-
 import React from 'react';
 import { Button } from './ui/DesignSystem';
 import { ChevronRight, Code2, LayoutTemplate, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as motionOriginal } from 'framer-motion';
+
+const motion = motionOriginal as any;
 
 interface HeroProps {
   onStart: () => void;
   onShowcase: () => void;
+  onPricing: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
+const Hero: React.FC<HeroProps> = ({ onStart, onShowcase, onPricing }) => {
   return (
     // Removed dark:bg-zinc-950 so the global background and particles are visible
     <div className="relative isolate pt-14 min-h-screen flex flex-col justify-center overflow-hidden">
@@ -23,11 +25,11 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             scale: [1, 1.1, 1],
           }}
           transition={{ 
-            duration: 20, 
+            duration: 35, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#0f172a] to-[#334155] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" 
+          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#0f172a] to-[#334155] opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" 
           style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }} 
         />
       </div>
@@ -41,16 +43,17 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             scale: [1, 1.2, 1],
           }}
           transition={{ 
-            duration: 15, 
+            duration: 30, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#1e293b] to-[#475569] opacity-20 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]" 
+          className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#1e293b] to-[#475569] opacity-10 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]" 
           style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }} 
         />
       </div>
       
-      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 relative z-10">
+      {/* Changed py-24 to py-12 for mobile */}
+      <div className="mx-auto max-w-7xl px-6 py-12 sm:py-32 lg:px-8 relative z-10">
         <div className="mx-auto max-w-2xl text-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -59,7 +62,11 @@ const Hero: React.FC<HeroProps> = ({ onStart, onShowcase }) => {
             className="mb-8 flex justify-center"
           >
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-muted-foreground ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:ring-white/10 dark:hover:ring-white/20 bg-background/50 backdrop-blur-sm">
-              Modelo de assinatura inteligente. <a href="#precos" className="font-semibold text-blue-600"><span className="absolute inset-0" aria-hidden="true" />Ver planos mensais <span aria-hidden="true">&rarr;</span></a>
+              Modelo de assinatura inteligente. 
+              <button onClick={onPricing} className="font-semibold text-blue-600 inline-flex items-center ml-1 focus:outline-none">
+                <span className="absolute inset-0" aria-hidden="true" />
+                Ver planos mensais <span aria-hidden="true" className="ml-1">&rarr;</span>
+              </button>
             </div>
           </motion.div>
           

@@ -1,10 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PlanType, ServicePlan, FormData } from '../types';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label, Badge } from './ui/DesignSystem';
 import { Check, Send, ChevronLeft, Upload, Info, AlertCircle, Sparkles, FileText } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+
+const motion = motionOriginal as any;
 
 const plans: ServicePlan[] = [
   {
@@ -82,6 +83,14 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
   const [selectedIndustrySelect, setSelectedIndustrySelect] = useState('');
   const [fileName, setFileName] = useState('');
   const [contentFileName, setContentFileName] = useState('');
+  
+  // Ref for auto-scrolling to the next button
+  const nextButtonRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top whenever step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -90,6 +99,16 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
 
   const updateForm = (key: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handlePlanSelect = (planId: PlanType) => {
+    updateForm('selectedPlan', planId);
+    // Smooth scroll to the next button after a short delay to allow state update/rendering
+    setTimeout(() => {
+      if (nextButtonRef.current) {
+        nextButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const handleIndustryChange = (val: string) => {
@@ -265,7 +284,7 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                   <Card 
                     key={plan.id} 
                     className={`cursor-pointer transition-all hover:border-primary hover:shadow-md ${formData.selectedPlan === plan.id ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : ''}`}
-                    onClick={() => updateForm('selectedPlan', plan.id)}
+                    onClick={() => handlePlanSelect(plan.id)}
                   >
                     <CardHeader>
                       <CardTitle className="flex justify-between items-start">
@@ -287,7 +306,7 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                   </Card>
                 ))}
               </div>
-              <div className="mt-8 flex justify-end">
+              <div className="mt-8 flex justify-end" ref={nextButtonRef}>
                  <Button onClick={handleNext} disabled={!formData.selectedPlan} size="lg">
                     Próximo Passo: Design
                  </Button>

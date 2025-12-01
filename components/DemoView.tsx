@@ -8,7 +8,9 @@ import {
   Scale, Gavel, Briefcase, Camera, PenTool, Layout,
   CreditCard, Truck, RefreshCcw
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
+
+const motion = motionOriginal as any;
 
 interface DemoViewProps {
   template: Template;

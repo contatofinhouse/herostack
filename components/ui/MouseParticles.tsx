@@ -18,7 +18,8 @@ const MouseParticles: React.FC = () => {
     const particleCount = 70;
     const connectionDistance = 140;
     const mouseDistance = 180;
-    const particleSpeed = 0.15; // Reduced speed (was 0.4)
+    // Increased from 0.04 to 0.3 to ensure visible movement on load (still slow/smooth)
+    const particleSpeed = 0.3; 
     
     // State
     const particles: { x: number; y: number; vx: number; vy: number; size: number }[] = [];
@@ -84,8 +85,7 @@ const MouseParticles: React.FC = () => {
             const forceDirectionY = dy / dist;
             const force = (mouseDistance - dist) / mouseDistance;
             
-            // Adjust this value to switch between attraction (+) and repulsion (-)
-            const strength = 0.03; 
+            const strength = 0.005; 
             
             p.vx += forceDirectionX * force * strength;
             p.vy += forceDirectionY * force * strength;
@@ -94,8 +94,8 @@ const MouseParticles: React.FC = () => {
         // Draw Particle
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        // Reduced opacity from 0.5 to 0.2
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.2)`; 
+        // Kept subtle opacity
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.1)`; 
         ctx.fill();
 
         // Connect Lines
@@ -108,8 +108,7 @@ const MouseParticles: React.FC = () => {
           if (dist2 < connectionDistance) {
             ctx.beginPath();
             const opacity = 1 - dist2 / connectionDistance;
-            // Reduced max line opacity from 0.2 to 0.1
-            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.1})`; 
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.06})`; 
             ctx.lineWidth = 1;
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);

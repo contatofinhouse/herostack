@@ -2,7 +2,9 @@ import React from 'react';
 import { PlanType } from '../types';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Badge } from './ui/DesignSystem';
 import { Check, Sparkles, Zap, Database, Rocket } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as motionOriginal } from 'framer-motion';
+
+const motion = motionOriginal as any;
 
 interface PricingProps {
   onSelectPlan: (plan: PlanType) => void;
@@ -83,7 +85,8 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
   ];
 
   return (
-    <section className="py-24 relative z-10" id="precos">
+    // Added scroll-mt-24 so the fixed header doesn't cover the title when scrolling
+    <section className="py-12 sm:py-24 relative z-10 scroll-mt-24" id="precos">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Planos Acessíveis</h2>

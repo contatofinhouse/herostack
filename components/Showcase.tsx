@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, Badge, Button } from './ui/DesignSystem';
 import { Eye } from 'lucide-react';
@@ -10,7 +11,7 @@ const templates: Template[] = [
     id: '1',
     name: 'Dashboard SaaS Pro',
     category: 'SaaS',
-    description: 'Interface administrativa moderna focada em métricas e conversão para startups.',
+    description: 'Ideal para Startups. Interface administrativa poderosa focada em métricas, retenção de usuários e escalabilidade do negócio.',
     // Image: Modern Dashboard/Analytics
     image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80'
   },
@@ -18,7 +19,7 @@ const templates: Template[] = [
     id: '2',
     name: 'Studio Design Digital',
     category: 'Institucional',
-    description: 'Portfolio minimalista e artístico para agências e criativos.',
+    description: 'Para Agências e Arquitetos. Um portfólio visualmente imersivo que destaca seus projetos e eleva o valor percebido da marca.',
     // Image: Creative/Artistic
     image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?w=800&q=80'
   },
@@ -26,7 +27,7 @@ const templates: Template[] = [
     id: '3',
     name: 'Advocacia & Associados',
     category: 'Serviços',
-    description: 'Layout sóbrio e elegante que transmite confiança e autoridade.',
+    description: 'Para Escritórios Jurídicos. Design sóbrio que transmite autoridade, confiança e facilita o agendamento de consultas.',
     // Image: Law Office/Formal
     image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=800&q=80'
   },
@@ -34,7 +35,7 @@ const templates: Template[] = [
     id: '4',
     name: 'Moda & E-commerce',
     category: 'Loja Virtual',
-    description: 'Vitrine de alta velocidade focada em experiência mobile e vendas.',
+    description: 'Para Varejo e Lifestyle. Experiência de compra fluida, ultrarrápida e otimizada para vender muito mais no celular.',
     // Image: Fashion/Retail
     image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80'
   }
@@ -127,7 +128,8 @@ interface ShowcaseProps {
 
 const Showcase: React.FC<ShowcaseProps> = ({ onClose, onViewDemo }) => {
   return (
-    <div className="py-24 relative z-10 bg-background/50 backdrop-blur-sm">
+    // Changed py-24 to py-12 for mobile
+    <div className="py-12 sm:py-24 relative z-10 bg-background/50 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Templates Premium</h2>

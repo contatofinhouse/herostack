@@ -3,7 +3,8 @@ import { ShieldCheck, MessageCircle, Server, MousePointerClick } from 'lucide-re
 
 const Benefits: React.FC = () => {
   return (
-    <section className="py-24 bg-background">
+    // Changed py-24 to py-12 for mobile
+    <section className="py-12 sm:py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:text-center">
           <h2 className="text-base font-semibold leading-7 text-primary">Por que assinar?</h2>

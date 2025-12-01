@@ -7,16 +7,22 @@ import DemoView from './components/DemoView';
 import Pricing from './components/Pricing';
 import Benefits from './components/Benefits';
 import LegalDocs from './components/LegalDocs';
+import FAQ from './components/FAQ';
 import { Button } from './components/ui/DesignSystem';
 import MouseParticles from './components/ui/MouseParticles';
-import { Moon, Sun, Linkedin, MessageCircle, Send } from 'lucide-react';
+import { Moon, Sun, Linkedin, MessageCircle, Send, Menu, X } from 'lucide-react';
 import { Template, PlanType } from './types';
+import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
+
+const motion = motionOriginal as any;
 
 const App: React.FC = () => {
   const [view, setView] = useState<'home' | 'wizard' | 'showcase' | 'demo' | 'terms' | 'privacy' | 'guide'>('home');
   const [isDark, setIsDark] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<PlanType | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingScrollToPricing, setPendingScrollToPricing] = useState(false);
 
   // Initialize theme
   useEffect(() => {
@@ -24,10 +30,36 @@ const App: React.FC = () => {
     setIsDark(true);
   }, []);
 
-  // Scroll to top whenever view changes
+  // Scroll to top whenever view changes, UNLESS we are pending a scroll to pricing
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [view]);
+    if (!pendingScrollToPricing) {
+      window.scrollTo(0, 0);
+    }
+    setMobileMenuOpen(false); // Close mobile menu on view change
+  }, [view, pendingScrollToPricing]);
+
+  // Robust Scroll To Pricing Effect
+  useEffect(() => {
+    if (view === 'home' && pendingScrollToPricing) {
+      // Small delay to ensure DOM is fully painted
+      const timer = setTimeout(() => {
+        const section = document.getElementById('precos');
+        if (section) {
+          const headerOffset = 80;
+          const elementPosition = section.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+          setPendingScrollToPricing(false);
+        }
+      }, 300); // Increased delay for mobile responsiveness
+
+      return () => clearTimeout(timer);
+    }
+  }, [view, pendingScrollToPricing]);
 
   const toggleTheme = () => {
     if (isDark) {
@@ -52,6 +84,28 @@ const App: React.FC = () => {
   const handleSelectPlan = (planId: PlanType) => {
     setSelectedPlanId(planId);
     setView('wizard');
+  };
+
+  const handlePricingClick = () => {
+    setMobileMenuOpen(false);
+    
+    if (view !== 'home') {
+      setPendingScrollToPricing(true);
+      setView('home');
+    } else {
+      // Already on home, just scroll
+      const section = document.getElementById('precos');
+      if (section) {
+        const headerOffset = 80;
+        const elementPosition = section.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }
   };
 
   // If in demo view, we render the DemoView component covering everything
@@ -105,11 +159,11 @@ const App: React.FC = () => {
               <button onClick={() => setView('home')} className="text-sm font-medium hover:text-primary transition-colors">Início</button>
               <button onClick={() => setView('showcase')} className="text-sm font-medium hover:text-primary transition-colors">Portfólio</button>
               <button onClick={() => setView('guide')} className="text-sm font-medium hover:text-primary transition-colors">Guia</button>
-              {view === 'home' && <a href="#precos" className="text-sm font-medium hover:text-primary transition-colors">Planos</a>}
+              <button onClick={handlePricingClick} className="text-sm font-medium hover:text-primary transition-colors">Planos</button>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <Button 
                 onClick={toggleTheme}
                 className="border-0 bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -122,20 +176,58 @@ const App: React.FC = () => {
               <Button 
                 size="sm" 
                 onClick={handleStartProject} 
-                className={view === 'wizard' ? 'hidden' : 'shadow-lg shadow-primary/30 font-semibold'}
+                className={`hidden md:inline-flex ${view === 'wizard' ? 'hidden' : 'shadow-lg shadow-primary/30 font-semibold'}`}
               >
                 Criar Site
+              </Button>
+
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </Button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-background border-b border-border/50 overflow-hidden shadow-xl"
+            >
+              <div className="flex flex-col p-4 space-y-2">
+                <button onClick={() => setView('home')} className="w-full text-left font-medium px-4 py-3 hover:bg-secondary/50 rounded-md active:bg-secondary/70 transition-colors">Início</button>
+                <button onClick={() => setView('showcase')} className="w-full text-left font-medium px-4 py-3 hover:bg-secondary/50 rounded-md active:bg-secondary/70 transition-colors">Portfólio</button>
+                <button onClick={() => setView('guide')} className="w-full text-left font-medium px-4 py-3 hover:bg-secondary/50 rounded-md active:bg-secondary/70 transition-colors">Guia</button>
+                <button onClick={handlePricingClick} className="w-full text-left font-medium px-4 py-3 hover:bg-secondary/50 rounded-md active:bg-secondary/70 transition-colors">Planos</button>
+                <div className="pt-2">
+                  <Button onClick={handleStartProject} className="w-full font-bold h-12 text-lg">
+                    Criar Site Agora
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Main Content Area - Z-index 10 (Above particles) */}
       <main className="relative z-10 pt-16">
         {view === 'home' && (
           <>
-            <Hero onStart={handleStartProject} onShowcase={() => setView('showcase')} />
+            <Hero 
+              onStart={handleStartProject} 
+              onShowcase={() => setView('showcase')} 
+              onPricing={handlePricingClick}
+            />
             <div id="compare">
                 <Comparison />
             </div>
@@ -143,9 +235,9 @@ const App: React.FC = () => {
             <div id="showcase-preview">
                <Showcase onClose={() => setView('home')} onViewDemo={handleViewDemo} />
             </div>
-            <div id="precos">
-               <Pricing onSelectPlan={handleSelectPlan} />
-            </div>
+            {/* Component has id="precos" inside */}
+            <Pricing onSelectPlan={handleSelectPlan} />
+            <FAQ />
           </>
         )}
 

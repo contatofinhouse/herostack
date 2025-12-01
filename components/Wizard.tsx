@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlanType, ServicePlan, FormData } from '../types';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label, Badge } from './ui/DesignSystem';
-import { Check, Send, ChevronLeft, Upload, Info, AlertCircle, Sparkles, FileText } from 'lucide-react';
+import { Check, Send, ChevronLeft, Upload, Info, AlertCircle, Sparkles, FileText, ArrowRight } from 'lucide-react';
 import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 
@@ -49,6 +49,8 @@ const fontOptions = [
 const industryOptions = [
   "Advocacia / Jurídico",
   "Saúde / Odontologia / Estética",
+  "Mercado Financeiro",
+  "Indústria",
   "Consultoria / Coaching",
   "E-commerce / Loja Virtual",
   "Tecnologia / SaaS / Startup",
@@ -67,7 +69,7 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
   const [step, setStep] = useState(initialPlan ? 2 : 1);
   const [formData, setFormData] = useState<FormData>({
     selectedPlan: initialPlan || null,
-    brandColors: { primary: '#000000', secondary: '#ffffff' },
+    brandColors: { primary: '#000000', secondary: '#3b82f6' },
     typography: 'Inter',
     businessName: '',
     businessDescription: '',
@@ -399,16 +401,44 @@ const Wizard: React.FC<WizardProps> = ({ onCancel, initialPlan }) => {
                              <p className="text-xs text-slate-500">{selectedFontData.usedBy}</p>
                          </div>
 
+                         {/* Use Secondary Color for a Badge to show contrast/combination */}
+                         <div className="mb-4">
+                            <span 
+                              className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-block shadow-sm"
+                              style={{ 
+                                backgroundColor: formData.brandColors.secondary,
+                                color: '#fff', // Ideally calculate contrast, but white works for most dark secondary colors. If user picks white secondary, it blends.
+                                border: '1px solid rgba(0,0,0,0.1)'
+                              }}
+                            >
+                              Novidade
+                            </span>
+                         </div>
+
                          <h3 style={{ color: formData.brandColors.primary }} className="text-3xl font-bold mb-3 max-w-sm">Sua Marca Incrível</h3>
                          <p className="text-slate-600 text-sm max-w-md leading-relaxed mb-6">
                             Este é um exemplo de como seu conteúdo ficará. A tipografia <strong>{selectedFontData.name}</strong> transmite a personalidade certa para o seu negócio.
                          </p>
-                         <button 
-                            className="px-6 py-2.5 rounded text-white text-sm font-medium transition-transform active:scale-95 shadow-lg"
-                            style={{ backgroundColor: formData.brandColors.primary }}
-                          >
-                            Saiba Mais
-                         </button>
+                         
+                         <div className="flex flex-wrap gap-3">
+                            <button 
+                                className="px-6 py-2.5 rounded text-white text-sm font-medium transition-transform active:scale-95 shadow-lg"
+                                style={{ backgroundColor: formData.brandColors.primary }}
+                              >
+                                Saiba Mais
+                            </button>
+                            {/* Secondary Action to show Secondary Color Usage */}
+                             <button 
+                                className="px-6 py-2.5 rounded text-sm font-medium transition-transform active:scale-95 border-2 flex items-center gap-2"
+                                style={{ 
+                                    borderColor: formData.brandColors.secondary,
+                                    color: formData.brandColors.secondary,
+                                    backgroundColor: 'transparent'
+                                }}
+                              >
+                                Contato <ArrowRight className="w-4 h-4" />
+                            </button>
+                         </div>
                       </div>
                    </div>
 
